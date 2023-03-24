@@ -1,5 +1,6 @@
-# Importing newest sdypy project clonned from github
 import sys
+
+# Append path to sdypy-EMA project from https://github.com/sdypy/sdypy-EMA.git
 
 sys.path.append('C:/Users/pc/PycharmProjects/sdypy-EMA/sdypy/')
 
@@ -14,7 +15,13 @@ approx_nat_freq = [1310, 1820, 3220, 3940, 5540, 5860, 6200, 6240, 7150, 7450, 7
                    9700]
 
 
-def model(path):
+def model(path, approx_nat_freq):
+    """
+
+    :param approx_nat_freq: Expected natural frequencies
+    :param path: Path to .UFF file with FRF data
+    :return: Object of class EMA.Model
+    """
     acc = EMA.Model(lower=10,
                     upper=10000,
                     pol_order_high=200,
@@ -42,7 +49,13 @@ def model(path):
     return acc
 
 
-def reconstruct_avg(model):
+def reconstruct_avg(model, approx_nat_freq):
+    """
+    Plots average of magnitude of all FRF, modelled and measured.
+    :param model: Object of class EMA.Model
+    :param approx_nat_freq: Expected natural frequencies
+    :return:
+    """
     reconstructed = np.mean(np.abs(model.H), axis=0)
     frequencies = model.freq
     measured = np.mean(np.abs(model.frf), axis=0)
