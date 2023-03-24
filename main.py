@@ -6,8 +6,8 @@ sys.path.append('C:/Users/vojta/PycharmProjects/sdypy-EMA/sdypy')
 
 import tools as tl
 
-tl.plt.rcParams['figure.figsize'] = [50, 20]
-tl.plt.rcParams['figure.dpi'] = 300
+#tl.plt.rcParams['figure.figsize'] = [0, 20] # No influence on results
+# tl.plt.rcParams['figure.dpi'] = 300
 
 path_to_data = ['C:/Users/vojta/OneDrive - České vysoké učení technické v Praze/DATA_D/_GithubProjectData/'
                 'EMA_with_sdypy/UFF_with_FRF_aluminum_casting/']

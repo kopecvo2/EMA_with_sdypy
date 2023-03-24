@@ -3,9 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import tkinter as tk
-import pyuff    # pyuff is used by EMA
-
-
+import pyuff  # pyuff is used by EMA
+import ctypes
+import pandas as pd
 
 
 def model(path, approx_nat_freq):
@@ -17,7 +17,7 @@ def model(path, approx_nat_freq):
     """
     acc = EMA.Model(lower=10,
                     upper=10000,
-                    pol_order_high=100,
+                    pol_order_high=200,
                     frf_from_uff=True)
 
     acc.read_uff(path)
@@ -51,7 +51,7 @@ def reconstruct_avg(model, approx_nat_freq):
     frequencies = model.freq
     measured = np.mean(np.abs(model.frf), axis=0)
 
-    fig, ax = plt.subplots()    # figsize=(60000, 20000)
+    fig, ax = plt.subplots()  # figsize=(60000, 20000)
 
     ax.clear()
     ax.plot(frequencies, measured, 'dimgray', label='measured', linewidth=1.0)
@@ -108,6 +108,8 @@ def reconstruct_scroll(model):
     ScrollerHeight = 1 / num_of_locations
 
     # Initialize tkinter
+
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
     root = tk.Tk()
     root.state('zoomed')
 
@@ -132,3 +134,13 @@ def reconstruct_scroll(model):
 
     root.mainloop()
 
+
+def prettyMAC(model1, model2):
+
+    MAC = EMA.tools.MAC(model1.A, model2.A)
+    MAC = pd.DataFrame(MAC, columns=np.around(model1.nat_freq).astype(int), index=np.around(model2.nat_freq).astype(int))
+    MAC = MAC.round(3)
+    MAC = MAC.style.background_gradient()
+    MAC = MAC.format(precision=3)
+
+    return MAC
