@@ -11,6 +11,10 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import tkinter as tk
 
+path_to_data = ['C:/Users/pc/OneDrive - České vysoké učení technické v Praze/DATA_D/_GithubProjectData/EMA_with_sdypy/'
+                'UFF_with_FRF_aluminum_casting/']
+
+
 approx_nat_freq = [1310, 1820, 3220, 3940, 5540, 5860, 6200, 6240, 7150, 7450, 7800, 8450, 8710, 8850, 9000, 9300,
                    9700]
 
@@ -140,17 +144,17 @@ def reconstruct_scroll(model):
     root.mainloop()
 
 
-part1 = model('C:/Users/pc/Desktop/Scan_odlitek1_testP1_s1.UFF')
-part2 = model('C:/Users/pc/Desktop/Scan_odlitek2_testP1_s1.UFF')
-part3 = model('C:/Users/pc/Desktop/Scan_odlitek3_testP1_r1.UFF')
-part4 = model('C:/Users/pc/Desktop/Scan_odlitek4_testP1_s1.UFF')
-part5 = model('C:/Users/pc/Desktop/Scan_odlitek5_testP1_s1.UFF')
+part1 = model(path_to_data[0] + 'Scan_odlitek1_testP1_s1.UFF', approx_nat_freq)
+part2 = model(path_to_data[0] + 'Scan_odlitek2_testP1_s1.UFF', approx_nat_freq)
+part3 = model(path_to_data[0] + 'Scan_odlitek3_testP1_r1.UFF', approx_nat_freq)
+part4 = model(path_to_data[0] + 'Scan_odlitek4_testP1_s1.UFF', approx_nat_freq)
+part5 = model(path_to_data[0] + 'Scan_odlitek5_testP1_s1.UFF', approx_nat_freq)
 
-reconstruct_avg(part1)
-reconstruct_avg(part2)
-reconstruct_avg(part3)
-reconstruct_avg(part4)
-reconstruct_avg(part5)
+reconstruct_avg(part1, approx_nat_freq)
+reconstruct_avg(part2, approx_nat_freq)
+reconstruct_avg(part3, approx_nat_freq)
+reconstruct_avg(part4, approx_nat_freq)
+reconstruct_avg(part5, approx_nat_freq)
 
 # reconstruct_scroll(acc)
 
