@@ -1,4 +1,5 @@
 import EMA
+import EMA.stabilization as stabilization
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -17,7 +18,7 @@ def model(path, approx_nat_freq):
     """
     acc = EMA.Model(lower=10,
                     upper=10000,
-                    pol_order_high=200,
+                    pol_order_high=50,
                     frf_from_uff=True)
 
     acc.read_uff(path)
@@ -26,7 +27,7 @@ def model(path, approx_nat_freq):
 
     # acc.select_poles()
 
-    acc.select_closest_poles(approx_nat_freq)
+    acc.select_closest_poles(approx_nat_freq, fn_temp=0.00002, xi_temp=0.05)
 
     H, A = acc.get_constants(method='lsfd', f_lower=None)
 
@@ -34,8 +35,11 @@ def model(path, approx_nat_freq):
 
     simplecheck = acc.nat_freq - approx_nat_freq
 
-    print('Expected and found nat. freq. differences in Hz:')
-    print(simplecheck)
+    if max(simplecheck) > 100:
+        print('Warning: difference between expected and found nat. freq. differences in Hz:')
+        print(simplecheck)
+
+
 
     return acc
 
@@ -140,7 +144,30 @@ def prettyMAC(model1, model2):
     MAC = EMA.tools.MAC(model1.A, model2.A)
     MAC = pd.DataFrame(MAC, columns=np.around(model1.nat_freq).astype(int), index=np.around(model2.nat_freq).astype(int))
     MAC = MAC.round(3)
-    MAC = MAC.style.background_gradient()
+    MAC = MAC.style.background_gradient(axis=None)
     MAC = MAC.format(precision=3)
 
     return MAC
+
+def histo_freq(model, binsize=10):
+
+    Nmax = model.pol_order_high
+    fn_temp = 0.0001
+    xi_temp = 0.05
+
+    bins = np.arange(model.lower, model.upper+binsize, binsize)
+
+    poles = model.all_poles
+    fn_temp, xi_temp, test_fn, test_xi = stabilization._stabilization(
+        poles, Nmax, err_fn=fn_temp, err_xi=xi_temp)
+    # select the stable poles
+    b = np.argwhere((test_fn > 0) & ((test_xi > 0) & (xi_temp > 0)))
+
+    mask = np.zeros_like(fn_temp)
+    mask[b[:, 0], b[:, 1]] = 1  # mask the unstable poles
+    f_stable = fn_temp * mask
+    xi_stable = xi_temp * mask
+    f_stable[f_stable != f_stable] = 0
+    xi_stable[xi_stable != xi_stable] = 0
+
+    pass

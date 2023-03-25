@@ -13,18 +13,27 @@ path_to_data = ['C:/Users/vojta/OneDrive - České vysoké učení technické v 
                 'EMA_with_sdypy/UFF_with_FRF_aluminum_casting/']
 
 
-approx_nat_freq = [1310, 1820, 3220, 3940, 5540, 5860, 6200, 6240, 7150, 7450, 7800, 8450, 8710, 8850, 9000, 9300,
-                   9700]
+approx_nat_freq = [1310, 1820, 3220, 3940, 5540, 6200, 6240, 7150, 7450, 7800, 8450, 8710, 8850, 9000, 9300,
+                   9700]    # , 5860
 
 
 
-part1 = tl.model(path_to_data[0] + 'Scan_odlitek1_testP1_s1.UFF', approx_nat_freq)
+# part1 = tl.model(path_to_data[0] + 'Scan_odlitek1_testP1_s1.UFF', approx_nat_freq)
+#
+# tl.reconstruct_avg(part1, approx_nat_freq)
+#
+# part1.select_poles()
 
-tl.reconstruct_scroll(model=part1)
-tl.reconstruct_avg(part1, approx_nat_freq)
-MAC11 = tl.EMA.tools.MAC(part1.A, part1.A)
+part = tl.model(path_to_data[0] + 'Scan_odlitek5_testP1_s1.UFF', approx_nat_freq)
 
-part2 = tl.model(path_to_data[0] + 'Scan_odlitek2_testP1_s1.UFF', approx_nat_freq)
+tl.histo_freq(part, 10)
+
+tl.reconstruct_avg(part, approx_nat_freq)
+
+part.select_poles()
+
+tl.reconstruct_avg(part2, approx_nat_freq)
+
 part3 = tl.model(path_to_data[0] + 'Scan_odlitek3_testP1_r1.UFF', approx_nat_freq)
 part4 = tl.model(path_to_data[0] + 'Scan_odlitek4_testP1_s1.UFF', approx_nat_freq)
 part5 = tl.model(path_to_data[0] + 'Scan_odlitek5_testP1_s1.UFF', approx_nat_freq)
