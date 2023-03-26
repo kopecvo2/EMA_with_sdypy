@@ -18,7 +18,7 @@ def model(path, approx_nat_freq):
     """
     acc = EMA.Model(lower=10,
                     upper=10000,
-                    pol_order_high=50,
+                    pol_order_high=100,
                     frf_from_uff=True)
 
     acc.read_uff(path)
@@ -38,8 +38,6 @@ def model(path, approx_nat_freq):
     if max(simplecheck) > 100:
         print('Warning: difference between expected and found nat. freq. differences in Hz:')
         print(simplecheck)
-
-
 
     return acc
 
@@ -65,10 +63,15 @@ def reconstruct_avg(model, approx_nat_freq):
     plt.xlabel('Frequency [Hz]')
     ax.set_ylabel('log magnitude ' + model.frf_type)
 
+    histogram, bin_vector, pole_list = new_histo_freq(model, 1000)
+
     ax2 = ax.twinx()
     ax2.clear()
-    ax2.plot(approx_nat_freq, np.ones_like(approx_nat_freq), 'b+', label='approx. nat. freq.')
-    ax2.plot(model.nat_freq, np.ones_like(approx_nat_freq), 'r+', label='found nat. freq.')
+    ax2.plot(approx_nat_freq, 100 * np.ones_like(approx_nat_freq), 'b+', label='approx. nat. freq.')
+    ax2.plot(model.nat_freq, 100 * np.ones_like(approx_nat_freq), 'r+', label='found nat. freq.')
+
+    ax2.stairs(histogram[::2], np.append(bin_vector[::2], model.upper), color='dimgray', fill=True, alpha=0.5)
+    ax2.stairs(histogram[1::2], np.append(bin_vector[1::2], model.upper), color='dimgray', fill=True, alpha=0.5)
 
     plt.legend()
     plt.show()
@@ -140,22 +143,23 @@ def reconstruct_scroll(model):
 
 
 def prettyMAC(model1, model2):
-
     MAC = EMA.tools.MAC(model1.A, model2.A)
-    MAC = pd.DataFrame(MAC, columns=np.around(model1.nat_freq).astype(int), index=np.around(model2.nat_freq).astype(int))
+    MAC = pd.DataFrame(MAC, columns=np.around(model1.nat_freq).astype(int),
+                       index=np.around(model2.nat_freq).astype(int))
     MAC = MAC.round(3)
     MAC = MAC.style.background_gradient(axis=None)
     MAC = MAC.format(precision=3)
 
     return MAC
 
-def histo_freq(model, binsize=10):
 
+def histo_freq(model, binsize=10):
+    f_window = 50
     Nmax = model.pol_order_high
     fn_temp = 0.0001
     xi_temp = 0.05
 
-    bins = np.arange(model.lower, model.upper+binsize, binsize)
+    bins = np.arange(model.lower, model.upper + binsize, binsize)
 
     poles = model.all_poles
     fn_temp, xi_temp, test_fn, test_xi = stabilization._stabilization(
@@ -170,4 +174,54 @@ def histo_freq(model, binsize=10):
     f_stable[f_stable != f_stable] = 0
     xi_stable[xi_stable != xi_stable] = 0
 
+    pass
+
+
+def new_histo_freq(model, binsize=100):
+    bin_vector = np.arange(model.lower, model.upper, binsize/2)
+    # inter_bin = np.arange(model.lower + binsize / 2, model.upper - binsize / 2, binsize)
+    histogram = np.array([])
+    # inter_histogram = np.array([])
+    pole_list = []
+    # inter_pole_list = []
+
+    poles = model.f_stable
+
+    for low_freq in bin_vector:
+        poles_in_bin = np.argwhere((poles >= low_freq) & (poles < (low_freq + binsize)))
+        pole_list.append([poles_in_bin])
+        histogram = np.append(histogram, np.size(poles_in_bin, 0))
+
+    # for low_freq in inter_bin:
+    #     poles_in_bin = np.argwhere((poles >= low_freq) & (poles < (low_freq + binsize)))
+    #     inter_pole_list.append([poles_in_bin])
+    #     inter_histogram = np.append(inter_histogram, np.size(poles_in_bin, 0))
+
+    # bin_vector = np.append(bin_vector, model.upper)
+    # inter_bin = np.append(inter_bin, model.upper - binsize / 2)
+
+    return histogram, bin_vector, pole_list
+
+
+def poles_from_intervals(model, intervals, plot=False):
+    old_histo, bin_v, pole_list = new_histo_freq(model, binsize=30)
+
+    histo = 1*old_histo
+    peak_indices = []
+
+    for interval in intervals:
+        h_ind = np.argwhere((bin_v >= interval[0]) & (bin_v < interval[1]))
+        for i in np.arange(0, interval[2]):
+            peak_ind = np.argmax(histo[h_ind]) + h_ind[0]
+            histo[int(peak_ind-1):int(peak_ind+2)] = np.array([0, 0, 0])
+            peak_indices.append(peak_ind)
+
+    if plot:
+        fig, ax = plt.subplots()
+        ax.stairs(histo[::2], np.append(bin_v[::2], model.upper), color='red', fill=True, alpha=0.5)
+        ax.stairs(histo[1::2], np.append(bin_v[1::2], model.upper), color='red', fill=True, alpha=0.5)
+        ax.stairs(old_histo[::2], np.append(bin_v[::2], model.upper), color='dimgray', fill=True, alpha=0.5)
+        ax.stairs(old_histo[1::2], np.append(bin_v[1::2], model.upper), color='dimgray', fill=True, alpha=0.5)
+        ax.set_ylabel('Histogram of stable poles (red=unused by intervals)')
+        plt.show()
     pass
