@@ -42,7 +42,7 @@ def model(path, approx_nat_freq):
     return acc
 
 
-def reconstruct_avg(model, approx_nat_freq):
+def reconstruct_avg(model, approx_nat_freq, binsize=30):
     """
     Plots average of magnitude of all FRF, modelled and measured.
     :param model: Object of class EMA.Model
@@ -63,7 +63,7 @@ def reconstruct_avg(model, approx_nat_freq):
     plt.xlabel('Frequency [Hz]')
     ax.set_ylabel('log magnitude ' + model.frf_type)
 
-    histogram, bin_vector, pole_list = new_histo_freq(model, 1000)
+    histogram, bin_vector, pole_list = new_histo_freq(model, binsize=binsize)
 
     ax2 = ax.twinx()
     ax2.clear()
@@ -178,27 +178,25 @@ def histo_freq(model, binsize=10):
 
 
 def new_histo_freq(model, binsize=100):
-    bin_vector = np.arange(model.lower, model.upper, binsize/2)
-    # inter_bin = np.arange(model.lower + binsize / 2, model.upper - binsize / 2, binsize)
+    """
+
+    :param model: Object of class EMA.EMA.Model
+    :param binsize: Size of histogram bin
+    :return: histogram, binvector, pole_list
+    histogram: number of stable poles in respective bin
+    bin_vector: vector of starts of bins
+    pole_list: list of arrays with indices to model.f_stable of stable poles in respective bin
+    """
+    bin_vector = np.arange(model.lower, model.upper, binsize / 2)
     histogram = np.array([])
-    # inter_histogram = np.array([])
     pole_list = []
-    # inter_pole_list = []
 
     poles = model.f_stable
 
     for low_freq in bin_vector:
-        poles_in_bin = np.argwhere((poles >= low_freq) & (poles < (low_freq + binsize)))
-        pole_list.append([poles_in_bin])
-        histogram = np.append(histogram, np.size(poles_in_bin, 0))
-
-    # for low_freq in inter_bin:
-    #     poles_in_bin = np.argwhere((poles >= low_freq) & (poles < (low_freq + binsize)))
-    #     inter_pole_list.append([poles_in_bin])
-    #     inter_histogram = np.append(inter_histogram, np.size(poles_in_bin, 0))
-
-    # bin_vector = np.append(bin_vector, model.upper)
-    # inter_bin = np.append(inter_bin, model.upper - binsize / 2)
+        ind_poles_in_bin = np.argwhere((poles >= low_freq) & (poles < (low_freq + binsize)))
+        pole_list.append([ind_poles_in_bin])
+        histogram = np.append(histogram, np.size(ind_poles_in_bin, 0))
 
     return histogram, bin_vector, pole_list
 
@@ -206,15 +204,16 @@ def new_histo_freq(model, binsize=100):
 def poles_from_intervals(model, intervals, plot=False):
     old_histo, bin_v, pole_list = new_histo_freq(model, binsize=30)
 
-    histo = 1*old_histo
+    histo = 1 * old_histo
     peak_indices = []
 
     for interval in intervals:
         h_ind = np.argwhere((bin_v >= interval[0]) & (bin_v < interval[1]))
         for i in np.arange(0, interval[2]):
-            peak_ind = np.argmax(histo[h_ind]) + h_ind[0]
-            histo[int(peak_ind-1):int(peak_ind+2)] = np.array([0, 0, 0])
+            peak_ind = int(np.argmax(histo[h_ind]) + h_ind[0])
+            histo[int(peak_ind - 1):int(peak_ind + 2)] = np.array([0, 0, 0])
             peak_indices.append(peak_ind)
+            choose_pole_from_bin(model, pole_list[peak_ind][0])
 
     if plot:
         fig, ax = plt.subplots()
@@ -224,4 +223,23 @@ def poles_from_intervals(model, intervals, plot=False):
         ax.stairs(old_histo[1::2], np.append(bin_v[1::2], model.upper), color='dimgray', fill=True, alpha=0.5)
         ax.set_ylabel('Histogram of stable poles (red=unused by intervals)')
         plt.show()
+
     pass
+
+
+def choose_pole_from_bin(model, ind_poles_in_bin):
+    poles_in_bin = model.f_stable[ind_poles_in_bin[:, 0], ind_poles_in_bin[:, 1]]
+    xi_in_bin = model.xi_stable[ind_poles_in_bin[:, 0], ind_poles_in_bin[:, 1]]
+    hist, bin_vec = np.histogram(xi_in_bin, bins=10)
+    ind_bin = np.argmax(hist)
+    arg_sel_xi = np.argwhere((xi_in_bin >= bin_vec[ind_bin]) & (xi_in_bin < bin_vec[ind_bin+1]))
+    mean_xi = np.mean(xi_in_bin[arg_sel_xi])
+    arg_pole = np.argmin(np.abs(xi_in_bin-mean_xi))
+    model_order = ind_poles_in_bin[arg_pole, 1]
+    pole_position = np.argmin(np.abs(model.pole_xi[model_order]-mean_xi))
+    pole_ind = [model_order, pole_position]
+    print(f"expected freq:{np.mean(poles_in_bin)}")
+    print(f"found freq:{model.pole_freq[model_order][pole_position]}")
+
+    return pole_ind
+

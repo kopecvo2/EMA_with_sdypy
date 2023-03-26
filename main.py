@@ -46,12 +46,11 @@ c = np.insert(a, ind, b)
 #
 # part1.select_poles()
 
-part = tl.model(path_to_data[0] + 'Scan_odlitek1_testP1_s1.UFF', approx_nat_freq)
+part = tl.model(path_to_data[0] + 'Scan_odlitek5_testP1_s2.UFF', approx_nat_freq)
 
-tl.poles_from_intervals(part, intervals)
+tl.poles_from_intervals(part, intervals, plot=True)
 
-tl.reconstruct_avg(part, approx_nat_freq)
-
+tl.reconstruct_avg(part, approx_nat_freq, )
 
 
 part.select_poles()
