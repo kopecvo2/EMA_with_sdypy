@@ -31,14 +31,21 @@ intervals = [[1200, 1450, 1],
              [8000, 10000, 6]
              ]
 
-a = np.arange(0, 10, 2)
-b = np.arange(1, 10, 2)
+part = tl.ModelEMA(path_to_data[0] + 'Scan_odlitek5_testP1_s2.UFF')
 
-ind = np.arange(1, len(b)+1, 1)
+part.get_stable_poles()
 
-c = np.insert(a, ind, b)
+part.poles_from_intervals(intervals)
 
+part.avg_plot()
 
+part2 = tl.ModelEMA(path_to_data[0] + 'Scan_odlitek1_testP1_s2.UFF')
+
+part2.get_stable_poles()
+
+part2.poles_from_intervals(intervals)
+
+part2.avg_plot()
 
 # part1 = tl.model(path_to_data[0] + 'Scan_odlitek1_testP1_s1.UFF', approx_nat_freq)
 #
@@ -46,11 +53,11 @@ c = np.insert(a, ind, b)
 #
 # part1.select_poles()
 
-part = tl.model(path_to_data[0] + 'Scan_odlitek5_testP1_s2.UFF', approx_nat_freq)
+part = tl.model(path_to_data[0] + 'Scan_odlitek5_testP1_s2.UFF', approx_nat_freq, pol_order=200)
 
-tl.poles_from_intervals(part, intervals, plot=True)
+tl.poles_from_intervals(part, intervals, plot=False, binsize=10)
 
-tl.reconstruct_avg(part, approx_nat_freq, )
+tl.reconstruct_avg(part, approx_nat_freq)
 
 
 part.select_poles()
