@@ -26,10 +26,12 @@ def prettyMAC(model1, model2, name_str=None, show_plot=True):
     plt.title('MAC')
     plt.xlabel(model1.name)
     plt.ylabel(model2.name)
+    plt.ioff()
     if name_str:
         plt.title('MAC:' + name_str)
         plt.savefig('DataFrame.png')
     if show_plot:
+        plt.ion()
         plt.show()
     return MAC
 

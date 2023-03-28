@@ -1,4 +1,5 @@
 import sys
+import pandas as pd
 
 import numpy as np
 
@@ -33,75 +34,24 @@ intervals = [[1200, 1450, 1],
              [8000, 10000, 6]
              ]
 
-part = tl.ModelEMA(path_to_data[0], 'Scan_odlitek1_testP1_s1.UFF')
+data = pd.DataFrame()
 
-part.get_stable_poles()
+EMAS = []
+def proc(path):
+    part = tl.ModelEMA(path_to_data[0], path)
 
-part.poles_from_intervals(intervals)
+    part.get_stable_poles()
 
-part.reconstruct_avg()
+    part.poles_from_intervals(intervals)
 
-part2 = tl.ModelEMA(path_to_data[0], 'Scan_odlitek4_testP1_s1.UFF')
+    part.reconstruct_avg()
 
-part2.get_stable_poles()
+    EMAS.append(part)
 
-part2.poles_from_intervals(intervals)
+    return part
 
-part2.reconstruct_avg()
-
-tl.prettyMAC(part, part2)
-
-# part_old = part
-# part_old.name = 'old_part'
-#
-# part_old.select_closest_poles(approx_nat_freq)
-#
-# part.reconstruct_avg()
-#
-# tl.prettyMAC(part, part_old, 'MAC11.png')
+p11 = proc('Scan_odlitek1_testP1_s1.UFF')
 
 
-part2 = tl.ModelEMA(path_to_data[0] + 'Scan_odlitek1_testP1_s2.UFF')
-
-part2.get_stable_poles()
-
-part2.poles_from_intervals(intervals)
-
-part2.avg_plot()
-
-# part1 = tl.model(path_to_data[0] + 'Scan_odlitek1_testP1_s1.UFF', approx_nat_freq)
-#
-# tl.reconstruct_avg(part1, approx_nat_freq)
-#
-# part1.select_poles()
-
-part = tl.model(path_to_data[0] + 'Scan_odlitek5_testP1_s2.UFF', approx_nat_freq, pol_order=200)
-
-tl.poles_from_intervals(part, intervals, plot=False, binsize=10)
-
-tl.reconstruct_avg(part, approx_nat_freq)
-
-
-part.select_poles()
-
-tl.reconstruct_avg(part2, approx_nat_freq)
-
-part3 = tl.model(path_to_data[0] + 'Scan_odlitek3_testP1_r1.UFF', approx_nat_freq)
-part4 = tl.model(path_to_data[0] + 'Scan_odlitek4_testP1_s1.UFF', approx_nat_freq)
-part5 = tl.model(path_to_data[0] + 'Scan_odlitek5_testP1_s1.UFF', approx_nat_freq)
-
-tl.reconstruct_avg(part1, approx_nat_freq)
-tl.reconstruct_avg(part2, approx_nat_freq)
-tl.reconstruct_avg(part3, approx_nat_freq)
-tl.reconstruct_avg(part4, approx_nat_freq)
-tl.reconstruct_avg(part5, approx_nat_freq)
-
-# reconstruct_scroll(acc)
-
-MAC11 = tl.EMA.tools.MAC(part1.A, part1.A)
-MAC12 = tl.EMA.tools.MAC(part1.A, part2.A)
-MAC13 = tl.EMA.tools.MAC(part1.A, part3.A)
-MAC14 = tl.EMA.tools.MAC(part1.A, part4.A)
-MAC15 = tl.EMA.tools.MAC(part1.A, part5.A)
 
 pass
