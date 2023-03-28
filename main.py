@@ -4,7 +4,7 @@ import numpy as np
 
 # Append path to sdypy-EMA project from https://github.com/sdypy/sdypy-EMA.git
 
-sys.path.append('C:/Users/vojta/PycharmProjects/sdypy-EMA/sdypy')
+sys.path.append('C:/Users/pc/PycharmProjects/sdypy-EMA/sdypy')
 
 import tools as tl
 
@@ -13,12 +13,14 @@ import matplotlib.pyplot as plt
 #tl.plt.rcParams['figure.figsize'] = [0, 20] # No influence on results
 # tl.plt.rcParams['figure.dpi'] = 300
 
-path_to_data = ['C:/Users/vojta/OneDrive - České vysoké učení technické v Praze/DATA_D/_GithubProjectData/'
+tl.plt.rcParams['figure.figsize'] = [10, 5]
+
+path_to_data = ['C:/Users/pc/OneDrive - České vysoké učení technické v Praze/DATA_D/_GithubProjectData/'
                 'EMA_with_sdypy/UFF_with_FRF_aluminum_casting/']
 
 
-approx_nat_freq = [1310, 1820, 3220, 3940, 5540, 6200, 6240, 7150, 7450, 7800, 8450, 8710, 8850, 9000, 9300,
-                   9700]    # , 5860
+# approx_nat_freq = [1310, 1820, 3220, 3940, 5540, 6200, 6240, 7150, 7450, 7800, 8450, 8710, 8850, 9000, 9300,
+#                    9700]    # , 5860
 
 intervals = [[1200, 1450, 1],
              [1450, 2900, 1],
@@ -31,13 +33,33 @@ intervals = [[1200, 1450, 1],
              [8000, 10000, 6]
              ]
 
-part = tl.ModelEMA(path_to_data[0] + 'Scan_odlitek5_testP1_s2.UFF')
+part = tl.ModelEMA(path_to_data[0], 'Scan_odlitek1_testP1_s1.UFF')
 
 part.get_stable_poles()
 
 part.poles_from_intervals(intervals)
 
-part.avg_plot()
+part.reconstruct_avg()
+
+part2 = tl.ModelEMA(path_to_data[0], 'Scan_odlitek4_testP1_s1.UFF')
+
+part2.get_stable_poles()
+
+part2.poles_from_intervals(intervals)
+
+part2.reconstruct_avg()
+
+tl.prettyMAC(part, part2)
+
+# part_old = part
+# part_old.name = 'old_part'
+#
+# part_old.select_closest_poles(approx_nat_freq)
+#
+# part.reconstruct_avg()
+#
+# tl.prettyMAC(part, part_old, 'MAC11.png')
+
 
 part2 = tl.ModelEMA(path_to_data[0] + 'Scan_odlitek1_testP1_s2.UFF')
 
