@@ -1,3 +1,4 @@
+##
 import sys
 import pandas as pd
 
@@ -8,6 +9,7 @@ import numpy as np
 sys.path.append('C:/Users/pc/PycharmProjects/sdypy-EMA/sdypy')
 
 import tools as tl
+import stat_tools as stat
 
 import matplotlib.pyplot as plt
 
@@ -37,8 +39,12 @@ intervals = [[1200, 1450, 1],
 data = pd.DataFrame()
 
 EMAS = []
+
+measurements = []
+
+
 def proc(path):
-    part = tl.ModelEMA(path_to_data[0], path)
+    part = tl.ModelEMA(path_to_data[0], path, pol_order=150)
 
     part.get_stable_poles()
 
@@ -46,12 +52,35 @@ def proc(path):
 
     part.reconstruct_avg()
 
-    EMAS.append(part)
+    measurements.append(part)
 
     return part
 
 p11 = proc('Scan_odlitek1_testP1_s1.UFF')
+p12 = proc('Scan_odlitek1_testP1_s2.UFF')
+p21 = proc('Scan_odlitek2_testP1_s1.UFF')
+p22 = proc('Scan_odlitek2_testP1_s2.UFF')
 
+##
 
+df = pd.DataFrame(columns=['name', 'nat_freq', 'damping', 'eig_vec', 'MAC_diag'])
+
+for meas in measurements:
+    eig_vec = meas.model.A.flatten()
+
+    MAC_diag = tl.prettyMAC(p11, meas, show_plot=True).to_numpy().diagonal()
+
+    df.loc[len(df.index)] = [meas.name,
+                             meas.nat_freq,
+                             meas.nat_xi,
+                             eig_vec,
+                             MAC_diag]
+
+Labels = [0, 0, 1, 1]
+Colors = ['red', 'blue']
+target_names = ['meas_1', 'meas_2']
+features = ['nat_freq', 'damping']
+
+X = stat.PCA(df, features, Labels, Colors, target_names)
 
 pass
