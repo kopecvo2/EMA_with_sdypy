@@ -7,7 +7,6 @@ import tkinter as tk
 import pyuff  # pyuff is used by EMA
 import ctypes
 import pandas as pd
-import dataframe_image as dfi
 import seaborn as sns
 
 
@@ -18,8 +17,6 @@ def prettyMAC(model1, model2, name_str=None, show_plot=True):
     MAC = MAC.round(3)
     # MAC = MAC.style.background_gradient(axis=None)
     # MAC = MAC.format(precision=3)
-
-    # figure = dfi.export(MAC, name_str)
 
     fig = plt.figure(facecolor='w', edgecolor='k')
     sns.heatmap(MAC, annot=True, cmap='viridis', cbar=False)
