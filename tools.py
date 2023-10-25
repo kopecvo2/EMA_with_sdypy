@@ -203,6 +203,11 @@ class ModelEMA:
             print('Warning: difference between expected and found nat. freq. differences in Hz:')
             print(simplecheck)
 
+        # Getting model parameters
+        self.nat_freq = self.model.nat_freq
+        self.nat_xi = self.model.nat_xi
+        self.pole_inds = self.model.pole_ind
+
         return
 
     def reconstruct_avg(self, binsize=None):
@@ -217,6 +222,9 @@ class ModelEMA:
                 binsize = self.binsize
             else:
                 binsize = 30
+
+        if self.freq_histogram is None:
+            self.histo_freq(binsize=binsize)
 
         if not self.freq_histogram.any():
             self.histo_freq(binsize=binsize)
@@ -265,7 +273,8 @@ class ModelEMA:
                     np.mean(measured) * np.ones_like(self.approx_nat_freq),
                     'r+',
                     label='found nat. freq.')
-            plt.legend()
+            # plt.legend()
+            ax.legend()
 
         plt.show()
 
