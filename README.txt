@@ -1,1 +1,0 @@
-File sdypy_EMA contains code from project https://github.com/sdypy/sdypy-EMA.git 
