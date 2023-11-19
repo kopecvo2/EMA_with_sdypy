@@ -1,5 +1,7 @@
-import EMA
-import EMA.stabilization as stabilization
+# import EMA
+# import EMA.stabilization as stabilization
+import sdypy_EMA.sdypy.EMA as EMA
+import sdypy_EMA.sdypy.EMA.stabilization as stabilization
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
