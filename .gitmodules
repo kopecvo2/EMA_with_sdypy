@@ -1,0 +1,3 @@
+[submodule "thirdparty/sdypy_EMA"]
+	path = thirdparty/sdypy_EMA
+	url = https://github.com/sdypy/sdypy-EMA.git

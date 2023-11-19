@@ -1,7 +1,6 @@
-# import EMA
-# import EMA.stabilization as stabilization
-import sdypy_EMA.sdypy.EMA as EMA
-import sdypy_EMA.sdypy.EMA.stabilization as stabilization
+
+import thirdparty.sdypy_EMA.sdypy.EMA as EMA
+import thirdparty.sdypy_EMA.sdypy.EMA.stabilization as stabilization
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -90,8 +89,7 @@ class ModelEMA:
         """
         model = EMA.Model(lower=10,
                           upper=10000,
-                          pol_order_high=self.pol_order,
-                          frf_from_uff=True)
+                          pol_order_high=self.pol_order)    # frf_from_uff=True
 
         model.read_uff(self.path)
         model.get_poles(method='lscf', show_progress=True)
