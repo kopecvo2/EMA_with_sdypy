@@ -5,6 +5,16 @@ import numpy as np
 
 
 def PCA(df, feature_name_list, labels, colors, target_names):
+    """
+
+    Computes and plots principal component analysis of given features
+    :param df: pandas.DataFrame with features in columns, each row corresponds to one measurement
+    :param feature_name_list: list of strings of feature names that should be used in PCA
+    :param labels: list of integers corresponding to correct class classification
+    :param colors: list of strings of color names corresponding to classes
+    :param target_names: list of strings of classes names
+    :return: X_pca - matrix of principal components
+    """
     feature_list = []
     feature_name = str()
     for feature in feature_name_list:

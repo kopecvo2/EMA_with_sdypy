@@ -11,12 +11,18 @@ import seaborn as sns
 
 
 def prettyMAC(model1, model2, name_str=None, show_plot=True):
+    """
+
+    :param model1: object of class ModelEMA
+    :param model2: object of class ModelEMA
+    :param name_str: string containing name of figure
+    :param show_plot: bool, True if to show the graph
+    :return: MAC, pandas.DataFrame of modal assurance criteria MAC of model1 and model2
+    """
     MAC = EMA.tools.MAC(model1.model.A, model2.model.A)
     MAC = pd.DataFrame(MAC, columns=np.around(model1.nat_freq).astype(int),
                        index=np.around(model2.nat_freq).astype(int))
     MAC = MAC.round(3)
-    # MAC = MAC.style.background_gradient(axis=None)
-    # MAC = MAC.format(precision=3)
 
     fig = plt.figure(facecolor='w', edgecolor='k')
     sns.heatmap(MAC, annot=True, cmap='viridis', cbar=False)
@@ -36,23 +42,50 @@ def prettyMAC(model1, model2, name_str=None, show_plot=True):
 class ModelEMA:
 
     def __init__(self, path_to_files, name, pol_order=150, binsize=10):
+        """
+
+        :param path_to_files: string of path to folder with uff files with measured data
+        :param name: string of name of uff file with measured data
+        :param pol_order: the highest order of model for stabilization diagram
+        :param binsize: size of bin for histogram
+        """
         self.pole_list = None
+        """list of stable poles in respective bins of frequency histogram"""
         self.bin_vector = None
+        """vector of starts of bins of frequency histogram"""
         self.nat_freq = None
+        """frequency of poles of identified model"""
         self.pole_inds = None
+        """array of indices of poles of identified model"""
         self.peak_indices = None
+        """indices of used peaks in frequency histogram"""
         self.freq_histogram = None
+        """histogram of number of stable poles in bins of given frequency"""
         self.nat_xi = None
+        """damping of poles of identified model"""
         self.path = path_to_files + name
+        """path to uff file with data"""
         self.name = name
+        """name of uff file with data"""
         self.pol_order = pol_order
+        """the highest order of model for stabilization diagram"""
         self.model = self.find_poles()
+        """model, object of class sdypy.EMA.Model"""
         self.binsize = binsize
+        """size of bin for histogram"""
         self.f_stable = []
+        """list of frequencies of stable poles"""
         self.xi_stable = []
+        """list of damping of stable poles"""
         self.approx_nat_freq = None
+        """approximate frequencies for closest poles method"""
 
     def find_poles(self):
+        """
+
+        Creates EMA stabilization diagram of measured data
+        :return: model, object of class sdypy.EMA.Model
+        """
         model = EMA.Model(lower=10,
                           upper=10000,
                           pol_order_high=self.pol_order,
@@ -64,6 +97,13 @@ class ModelEMA:
         return model
 
     def get_stable_poles(self, fn_temp=0.0001, xi_temp=0.05):
+        """
+
+        Uses sdypy.EMA.stabilization to find stable poles in stabilization diagram.
+        Finds self.f_stable, self.xi_stable - stable pole frequency and damping.
+        :param fn_temp: float, coefficient for evaluating pole stability in frequency
+        :param xi_temp: float, coefficient for evaluating pole stability in damping
+        """
         Nmax = self.pol_order
         # Copied from EMA
         poles = self.model.all_poles
@@ -83,11 +123,16 @@ class ModelEMA:
         self.model.f_stable = f_stable  # Get rid of it in future
 
     def poles_from_intervals(self, intervals, plot=False, binsize=30):
+        """
 
-        # old_histo, bin_v, pole_list = histo_freq(self.model.lower,
-        #                                          self.model.upper,
-        #                                          self.f_stable,
-        #                                          binsize=binsize)
+        Method finds peaks of frequency histogram of stable poles within given interval and locates most possible pole
+        :param intervals: list of lists: [[start freq. interval, end freq. interval, number of expected poles in
+        interval],[...],...]
+        :param plot: bool, True for plotting results
+        :param binsize: size of bins of frequency histogram
+        :return:
+        """
+
         self.histo_freq(binsize=binsize)
 
         histo = 1 * self.freq_histogram
@@ -143,9 +188,15 @@ class ModelEMA:
         self.model.nat_xi = self.nat_xi
         self.model.pole_ind = self.pole_inds
 
-        pass
-
     def choose_pole_from_bin(self, ind_poles_in_bin, do_print=False):
+        """
+
+        Method chooses most possible pole of given stable poles of close frequency by choosing the one with the most
+        possible damping.
+        :param ind_poles_in_bin: indices of poles, from which to choose
+        :param do_print: bool, True to print messages
+        :return: pole_ind - indices of chosen poles
+        """
         poles_in_bin = self.f_stable[ind_poles_in_bin[:, 0], ind_poles_in_bin[:, 1]]
         xi_in_bin = self.xi_stable[ind_poles_in_bin[:, 0], ind_poles_in_bin[:, 1]]
         hist, bin_vec = np.histogram(xi_in_bin, bins=10)
@@ -170,12 +221,9 @@ class ModelEMA:
     def histo_freq(self, binsize=30):
         """
 
-        :param model: Object of class EMA.EMA.Model
+        Method creates histogram of stable poles, the x-axis being frequency of poles
         :param binsize: Size of histogram bin
-        :return: histogram, binvector, pole_list
-        histogram: number of stable poles in respective bin
-        bin_vector: vector of starts of bins
-        pole_list: list of arrays with indices to model.f_stable of stable poles in respective bin
+        :return:
         """
         bin_vector = np.arange(self.model.lower, self.model.upper, binsize / 2)
         histogram = np.array([])
@@ -190,9 +238,15 @@ class ModelEMA:
         self.bin_vector = bin_vector
         self.pole_list = pole_list
 
-        # return histogram, bin_vector, pole_list
-
     def select_closest_poles(self, approx_nat_freq, fn_temp=0.00002, xi_temp=0.05):
+        """
+
+        Method uses sdypy.EMA.Model.select_closest_poles to choose from stable poles.
+        :param approx_nat_freq: List of natural frequencies, to which the method will find the closest stable poles
+        :param fn_temp: float, coefficient for evaluating pole stability in frequency
+        :param xi_temp: float, coefficient for evaluating pole stability in damping
+        :return:
+        """
 
         self.model.select_closest_poles(approx_nat_freq, fn_temp=fn_temp, xi_temp=xi_temp)
         self.approx_nat_freq = approx_nat_freq
@@ -208,13 +262,11 @@ class ModelEMA:
         self.nat_xi = self.model.nat_xi
         self.pole_inds = self.model.pole_ind
 
-        return
-
     def reconstruct_avg(self, binsize=None):
         """
-        Plots average of magnitude of all FRF, modelled and measured.
-        :param model: Object of class EMA.Model
-        :param approx_nat_freq: Expected natural frequencies
+        Plots average of magnitude of all FRF, modelled and measured. Uses sdypy.EMA.Model.get_constants method to find
+        eigenvectors of the model.
+        :param binsize: size of bin of histogram
         :return:
         """
         if not binsize:
@@ -237,9 +289,7 @@ class ModelEMA:
 
         fig, ax = plt.subplots()  # figsize=(60000, 20000)
 
-        # ax.clear()
         ax2 = ax.twinx()
-        # ax2.clear()
 
         ax.plot(frequencies, measured, 'dimgray', label='measured', linewidth=1.0)
         ax.plot(frequencies, reconstructed, 'r--', label='reconstructed', linewidth=1.0)
@@ -281,8 +331,7 @@ class ModelEMA:
     def reconstruct_scroll(self):
         """
         Function creates interactive canvas with comparation of measured and reconstructed FRFs from model for each FRF.
-        :param model: Object of class EMA.EMA.Model
-        :return: None
+        :return:
         """
 
         self.model.get_constants(method='lsfd', f_lower=None)

@@ -1,6 +1,6 @@
 ##
 
-# All important stuff is njuow in PCA of aluminum parts FRF jupyter notebook
+# All important stuff is now in PCA of aluminum parts FRF jupyter notebook
 
 import sys
 
