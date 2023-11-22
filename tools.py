@@ -295,7 +295,7 @@ class ModelEMA:
 
         ax.plot(frequencies, measured, 'dimgray', label='measured', linewidth=1.0)
         ax.plot(frequencies, reconstructed, 'r--', label='reconstructed', linewidth=1.0)
-        ax.legend()
+        ax.legend(loc='lower left')
 
         ax2.stairs(self.freq_histogram[::2],
                    np.append(self.bin_vector[::2], self.model.upper),
@@ -325,7 +325,7 @@ class ModelEMA:
                     'r+',
                     label='found nat. freq.')
             # plt.legend()
-            ax.legend()
+            ax.legend(loc='lower left')
         ax2.legend(loc='lower right')
 
         plt.show()
