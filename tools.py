@@ -42,7 +42,7 @@ def prettyMAC(model1, model2, name_str=None, show_plot=True):
 
 class ModelEMA:
 
-    def __init__(self, path_to_files, name, pol_order=150, binsize=10):
+    def __init__(self, path_to_files, name, pol_order=150, binsize=30, units=None):
         """
 
         :param path_to_files: string of path to folder with uff files with measured data
@@ -80,6 +80,8 @@ class ModelEMA:
         """list of damping of stable poles"""
         self.approx_nat_freq = None
         """approximate frequencies for closest poles method"""
+        self.units = units
+        """string of units of the FRF"""
 
     def find_poles(self):
         """
@@ -299,20 +301,19 @@ class ModelEMA:
                    np.append(self.bin_vector[::2], self.model.upper),
                    color='dimgray',
                    fill=True,
-                   alpha=0.5,
+                   alpha=0.3,
                    label='histogram')
         ax2.stairs(self.freq_histogram[1::2],
                    np.append(self.bin_vector[1::2], self.model.upper),
                    color='dimgray',
                    fill=True,
-                   alpha=0.5,
-                   label='histogram')
+                   alpha=0.3)
 
         ax.set_yscale('log')
         plt.title('FRF average ' + self.name)
         ax.set_xlabel('Frequency [Hz]')
-        ax.set_ylabel('log magnitude ' + self.model.frf_type)
-        ax2.set_ylabel('bins with stable poles')
+        ax.set_ylabel('log magnitude ' + self.model.frf_type + self.units)
+        ax2.set_ylabel('stable pole frequency histogram')
 
         if self.approx_nat_freq:
             ax.plot(self.approx_nat_freq,
@@ -325,6 +326,7 @@ class ModelEMA:
                     label='found nat. freq.')
             # plt.legend()
             ax.legend()
+        ax2.legend(loc='lower right')
 
         plt.show()
 
